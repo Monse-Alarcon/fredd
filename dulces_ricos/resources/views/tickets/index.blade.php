@@ -1,0 +1,87 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-pink-600 leading-tight">
+             Lista de Tickets
+        </h2>
+    </x-slot>
+
+    <div class="py-8 max-w-5xl mx-auto">
+        <!-- Mensaje de éxito -->
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mb-4">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <!-- Botón para crear nuevo ticket -->
+        <div class="mb-4 text-right">
+            <a href="{{ route('tickets.create') }}" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded shadow">
+                 Nuevo Ticket
+            </a>
+        </div>
+
+        <!-- Tabla de tickets -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-pink-100 text-pink-700">
+                    <tr>
+                        <th class="py-3 px-4 border-b">#</th>
+                        <th class="py-3 px-4 border-b">Título</th>
+                        <th class="py-3 px-4 border-b">Descripción</th>
+                        <th class="py-3 px-4 border-b">Prioridad</th>
+                        <th class="py-3 px-4 border-b">Estado</th>
+                        <th class="py-3 px-4 border-b text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($tickets as $ticket)
+                        <tr class="hover:bg-pink-50">
+                            <td class="py-2 px-4 border-b">{{ $loop->iteration }}</td>
+                            <td class="py-2 px-4 border-b">{{ $ticket->titulo }}</td>
+                            <td class="py-2 px-4 border-b">{{ $ticket->descripcion }}</td>
+                            <td class="py-2 px-4 border-b">{{ ucfirst($ticket->prioridad) }}</td>
+                            <td class="py-2 px-4 border-b">{{ ucfirst($ticket->estado) }}</td>
+                            <td class="py-2 px-4 border-b text-center">
+                                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" class="inline-block" onsubmit="return confirmDelete(event)">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow">
+                                         Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-3 px-4 text-center text-gray-500">No hay tickets aún 😅</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--  Script SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function confirmDelete(event) {
+            event.preventDefault(); // Evita envío inmediato
+
+            Swal.fire({
+                title: '¿Eliminar este ticket?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e53e3e',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            });
+        }
+    </script>
+</x-app-layout>
