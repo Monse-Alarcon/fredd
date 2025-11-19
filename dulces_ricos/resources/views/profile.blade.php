@@ -17,9 +17,7 @@
             <!-- Foto actual -->
             @php
                 $user = Auth::user();
-                $photoUrl = $user->profile_photo
-                    ? Storage::url($user->profile_photo)
-                    : asset('img/user-placeholder.png');
+                $photoUrl = $user->profile_photo_url;
             @endphp
 
             <div class="mb-4 text-center">
@@ -43,7 +41,7 @@
             <!-- Nombre -->
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" name="name" value="{{ old('name', Auth::user()->name) }}"
+                <input type="text" name="name" value="{{ old('name', $user->name) }}"
                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                 @error('name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -63,7 +61,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700">Departamento</label>
                 <p class="mt-1 p-2 bg-gray-100 rounded-md text-gray-800">
-                    {{ Auth::user()->departamento ?? 'Ventas' }}
+                    {{ $user->departamento ?? 'Ventas' }}
                 </p>
             </div>
 

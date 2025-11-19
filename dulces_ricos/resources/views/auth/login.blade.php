@@ -2,16 +2,33 @@
   <form method="POST" action="{{ route('login') }}" class="space-y-5">
     @csrf
 
+    <!-- Mensajes de error -->
+    @if ($errors->any())
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <ul class="list-disc list-inside">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
     <div>
       <label for="email" class="block text-sm font-semibold text-gray-700">Correo electrónico</label>
-      <input id="email" name="email" type="email" required autofocus
-        class="mt-1 w-full rounded-xl border-gray-300 focus:ring-pink-400 focus:border-pink-400 transition" />
+      <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
+        class="mt-1 w-full rounded-xl border-gray-300 focus:ring-pink-400 focus:border-pink-400 transition @error('email') border-red-500 @enderror" />
+      @error('email')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label for="password" class="block text-sm font-semibold text-gray-700">Contraseña</label>
       <input id="password" name="password" type="password" required
-        class="mt-1 w-full rounded-xl border-gray-300 focus:ring-pink-400 focus:border-pink-400 transition" />
+        class="mt-1 w-full rounded-xl border-gray-300 focus:ring-pink-400 focus:border-pink-400 transition @error('password') border-red-500 @enderror" />
+      @error('password')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+      @enderror
     </div>
 
     <div class="flex items-center justify-between text-sm">

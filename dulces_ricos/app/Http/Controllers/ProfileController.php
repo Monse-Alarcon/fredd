@@ -30,8 +30,6 @@ class ProfileController extends Controller
         // Actualizar nombre
         $user->name = $request->name;
 
-        
-
         // Actualizar contraseña si se ingresó
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

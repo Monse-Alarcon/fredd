@@ -13,19 +13,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Usuario
+        User::create([
+            'name' => 'Usuario',
+            'email' => 'usuario@ejemplo.com',
+            'password' => '12345678',
+            'role' => 'usuario',
+            'departamento' => 'General',
+            'email_verified_at' => now(),
         ]);
 
-        // Usuario agregado según solicitud: Dani
-        User::factory()->create([
-            'name' => 'Dani',
-            'email' => '12450107@upq.edu.mx',
-            // modelo User tiene el cast 'password' => 'hashed', así que asignar texto plano es seguro
+        // Auxiliar
+        User::create([
+            'name' => 'Auxiliar',
+            'email' => 'auxiliar@ejemplo.com',
             'password' => '12345678',
+            'role' => 'auxiliar',
+            'departamento' => 'Soporte',
+            'email_verified_at' => now(),
+        ]);
+
+        // Jefe
+        User::create([
+            'name' => 'Jefe',
+            'email' => 'jefe@ejemplo.com',
+            'password' => '12345678',
+            'role' => 'jefe',
+            'departamento' => 'Administración',
+            'email_verified_at' => now(),
         ]);
     }
 }

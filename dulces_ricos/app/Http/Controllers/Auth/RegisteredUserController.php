@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
 {
     // Esto detendrá la ejecución y mostrará todos los datos que vienen del formulario
-    dd($request->all());
+   // dd($request->all());
 
     // 1️⃣ Validar datos de registro
     $request->validate([

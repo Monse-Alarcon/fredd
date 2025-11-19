@@ -37,8 +37,8 @@ class User extends Authenticatable
      */
     public function getProfilePhotoUrlAttribute()
     {
-        if ($this->profile_photo && Storage::exists('public/profile_pictures/' . $this->profile_photo)) {
-            return asset('storage/profile_pictures/' . $this->profile_photo);
+        if ($this->profile_photo && Storage::disk('public')->exists($this->profile_photo)) {
+            return Storage::disk('public')->url($this->profile_photo);
         }
 
         // Imagen por defecto si el usuario no tiene foto

@@ -13,12 +13,36 @@
             </div>
         @endif
 
-        <!-- Botón para crear nuevo ticket -->
-        <div class="mb-4 text-right">
-            <a href="{{ route('tickets.create') }}" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded shadow">
-                 Nuevo Ticket
-            </a>
-        </div>
+        <!-- Estadísticas solo para jefe -->
+        @if (Auth::user()->role === 'jefe' && isset($estadisticas))
+            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white shadow-md rounded-lg p-4 border-l-4 border-blue-500">
+                    <div class="text-sm text-gray-600">Total de Tickets</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $estadisticas['total'] }}</div>
+                </div>
+                <div class="bg-white shadow-md rounded-lg p-4 border-l-4 border-yellow-500">
+                    <div class="text-sm text-gray-600">Abiertos</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $estadisticas['abierto'] }}</div>
+                </div>
+                <div class="bg-white shadow-md rounded-lg p-4 border-l-4 border-orange-500">
+                    <div class="text-sm text-gray-600">En Progreso</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $estadisticas['en_progreso'] }}</div>
+                </div>
+                <div class="bg-white shadow-md rounded-lg p-4 border-l-4 border-green-500">
+                    <div class="text-sm text-gray-600">Cerrados</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $estadisticas['cerrado'] }}</div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Botón para crear nuevo ticket (solo para usuario y auxiliar) -->
+        @if(Auth::user()->role !== 'jefe')
+            <div class="mb-4 text-right">
+                <a href="{{ route('tickets.create') }}" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded shadow">
+                     Nuevo Ticket
+                </a>
+            </div>
+        @endif
 
         <!-- Tabla de tickets -->
         <div class="bg-white shadow-md rounded-lg overflow-hidden">

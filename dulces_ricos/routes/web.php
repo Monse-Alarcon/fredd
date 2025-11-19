@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,10 +14,10 @@ Route::middleware(['web'])->group(function () {
         return view('welcome');
     });
 
-    // Redirigir dashboard a lista de tickets
-    Route::get('/dashboard', function () {
-        return redirect()->route('tickets.index');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    // Dashboard según rol
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware(['auth', 'verified'])
+        ->name('dashboard');
 
     //  Perfil y tickets protegidos por 'auth'
     Route::middleware(['auth'])->group(function () {
@@ -29,7 +31,14 @@ Route::middleware(['web'])->group(function () {
         Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
         Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
         Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
-        Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy'); // 👈 Ruta para eliminar ticket
+        Route::get('/tickets/{id}', [TicketController::class, 'show'])->name('tickets.show');
+        Route::patch('/tickets/{id}/status', [TicketController::class, 'updateStatus'])->name('tickets.update-status');
+        Route::post('/tickets/{id}/asignar', [TicketController::class, 'asignar'])->name('tickets.asignar');
+        Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+
+        // Reportes (validación dentro del controlador)
+        Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+        Route::post('/reportes/generar-pdf', [ReporteController::class, 'generarPDF'])->name('reportes.generar-pdf');
     });
 
     //  Autenticación (login, registro, etc.)
