@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\User;
+use App\Models\Departamento;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
@@ -86,32 +88,69 @@ class TicketController extends Controller
         return redirect()->route('dashboard')->with('success', 'Estado del ticket actualizado correctamente.');
     }
 
-    // Asignar ticket a auxiliar (para jefe)
+    // Asignar ticket a auxiliar o departamento (para jefe)
     public function asignar(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
         
         $request->validate([
-            'auxiliar_id' => 'required|exists:users,id',
+            'auxiliar_id' => 'nullable|exists:users,id',
+            'departamento_id' => 'nullable|exists:departamentos,id',
         ]);
 
-        $auxiliar = User::findOrFail($request->auxiliar_id);
-        
-        if ($auxiliar->role !== 'auxiliar') {
-            return redirect()->back()->withErrors(['auxiliar_id' => 'El usuario seleccionado no es un auxiliar.']);
+        // Validar que al menos uno sea proporcionado
+        if (!$request->auxiliar_id && !$request->departamento_id) {
+            return redirect()->back()->withErrors(['error' => 'Debes seleccionar un auxiliar o un departamento.']);
         }
 
-        $ticket->auxiliar_id = $request->auxiliar_id;
-        $ticket->fecha_asignacion = now();
+        // Si se asigna a un auxiliar
+        if ($request->auxiliar_id) {
+            $auxiliar = User::findOrFail($request->auxiliar_id);
+            
+            if ($auxiliar->role !== 'auxiliar') {
+                return redirect()->back()->withErrors(['auxiliar_id' => 'El usuario seleccionado no es un auxiliar.']);
+            }
+
+            $ticket->auxiliar_id = $request->auxiliar_id;
+            $ticket->fecha_asignacion = now();
+        }
+
+        // Si se asigna a un departamento
+        if ($request->departamento_id) {
+            $ticket->departamento_id = $request->departamento_id;
+            if (!$ticket->auxiliar_id) {
+                $ticket->fecha_asignacion = now();
+            }
+        }
+
         $ticket->save();
 
-        return redirect()->route('dashboard')->with('success', 'Ticket asignado correctamente al auxiliar.');
+        $mensaje = 'Ticket asignado correctamente.';
+        if ($request->auxiliar_id && $request->departamento_id) {
+            $mensaje = 'Ticket asignado correctamente al auxiliar y departamento.';
+        } elseif ($request->departamento_id) {
+            $mensaje = 'Ticket asignado correctamente al departamento.';
+        }
+
+        return redirect()->route('dashboard')->with('success', $mensaje);
     }
 
     //  Eliminar ticket
     public function destroy($id)
     {
         $ticket = Ticket::findOrFail($id);
+        $user = auth()->user();
+        
+        // Restricción: usuario no puede cancelar ticket en Proceso
+        if ($user->role === 'usuario' && $ticket->estado === 'en progreso') {
+            return redirect()->back()->withErrors(['error' => 'No puedes cancelar un ticket que está en proceso.']);
+        }
+        
+        // Solo el usuario que creó el ticket o el jefe pueden eliminarlo
+        if ($user->role !== 'jefe' && $ticket->usuario_id !== $user->id) {
+            return redirect()->back()->withErrors(['error' => 'No tienes permiso para eliminar este ticket.']);
+        }
+        
         $ticket->delete();
 
         return redirect()->route('dashboard')->with('success', ' Ticket eliminado correctamente.');

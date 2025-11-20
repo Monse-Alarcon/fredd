@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\Departamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -63,25 +65,63 @@ class DashboardController extends Controller
 
     private function dashboardJefe()
     {
-        // Jefe ve todos los tickets y estadísticas
-        $tickets = Ticket::with(['usuario', 'auxiliar'])->orderBy('created_at', 'desc')->get();
+        // Obtener filtros de fecha
+        $filtroTipo = request()->get('filtro_tipo', 'todos');
+        $fechaInicio = request()->get('fecha_inicio');
+        $fechaFin = request()->get('fecha_fin');
+
+        // Construir query base
+        $query = Ticket::with(['usuario', 'auxiliar', 'departamento']);
+
+        // Aplicar filtros de fecha
+        if ($filtroTipo === 'semana') {
+            $query->whereBetween('created_at', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek()
+            ]);
+        } elseif ($filtroTipo === 'mes') {
+            $query->whereBetween('created_at', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ]);
+        } elseif ($filtroTipo === 'rango' && $fechaInicio && $fechaFin) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($fechaInicio)->startOfDay(),
+                Carbon::parse($fechaFin)->endOfDay()
+            ]);
+        }
+
+        $tickets = $query->orderBy('created_at', 'desc')->get();
         
+        // Estadísticas generales (sin filtros)
         $estadisticas = [
             'total' => Ticket::count(),
             'abierto' => Ticket::where('estado', 'abierto')->count(),
             'en_progreso' => Ticket::where('estado', 'en progreso')->count(),
             'cerrado' => Ticket::where('estado', 'cerrado')->count(),
+            'rechazado' => Ticket::where('estado', 'rechazado')->count() ?? 0,
             'alta' => Ticket::where('prioridad', 'alta')->count(),
             'media' => Ticket::where('prioridad', 'media')->count(),
             'baja' => Ticket::where('prioridad', 'baja')->count(),
-            'sin_asignar' => Ticket::whereNull('auxiliar_id')->where('estado', '!=', 'cerrado')->count(),
-            'asignados' => Ticket::whereNotNull('auxiliar_id')->count(),
+            'sin_asignar' => Ticket::whereNull('auxiliar_id')->whereNull('departamento_id')->where('estado', '!=', 'cerrado')->count(),
+            'asignados' => Ticket::where(function($q) {
+                $q->whereNotNull('auxiliar_id')->orWhereNotNull('departamento_id');
+            })->count(),
+        ];
+
+        // Datos para gráficas
+        $datosGraficas = [
+            'atendidos' => Ticket::where('estado', 'cerrado')->count(),
+            'rechazados' => Ticket::where('estado', 'rechazado')->count() ?? 0,
+            'pendientes' => Ticket::where('estado', 'abierto')->count(),
+            'en_proceso' => Ticket::where('estado', 'en progreso')->count(),
         ];
 
         $usuarios = User::all();
         $auxiliares = User::where('role', 'auxiliar')->get();
+        $departamentos = Departamento::all();
 
-        return view('dashboard-jefe', compact('tickets', 'estadisticas', 'usuarios', 'auxiliares'));
+        return view('dashboard-jefe', compact('tickets', 'estadisticas', 'usuarios', 'auxiliares', 'departamentos', 'datosGraficas', 'filtroTipo', 'fechaInicio', 'fechaFin'));
     }
 }
 

@@ -67,14 +67,75 @@
             </div>
         </div>
 
-        <!-- Botón para generar PDF -->
-        <div class="mb-6">
+        <!-- Botones de administración y reportes -->
+        <div class="mb-6 flex flex-wrap gap-4">
+            <a href="{{ route('admin.users.index') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow font-semibold inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                Gestión de Usuarios
+            </a>
+            <a href="{{ route('admin.departamentos.index') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow font-semibold inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Gestión de Departamentos
+            </a>
             <a href="{{ route('reportes.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow font-semibold inline-flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Generar Reporte PDF
             </a>
+        </div>
+
+        <!-- Filtros de fecha -->
+        <div class="mb-6 bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Filtros de Fecha</h3>
+            <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Filtro</label>
+                    <select name="filtro_tipo" id="filtro_tipo" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="todos" {{ $filtroTipo == 'todos' ? 'selected' : '' }}>Todos</option>
+                        <option value="semana" {{ $filtroTipo == 'semana' ? 'selected' : '' }}>Esta Semana</option>
+                        <option value="mes" {{ $filtroTipo == 'mes' ? 'selected' : '' }}>Este Mes</option>
+                        <option value="rango" {{ $filtroTipo == 'rango' ? 'selected' : '' }}>Rango de Fechas</option>
+                    </select>
+                </div>
+                <div id="rango-fechas-filtro" class="{{ $filtroTipo == 'rango' ? '' : 'hidden' }}">
+                    <div class="flex gap-2">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
+                            <input type="date" name="fecha_inicio" value="{{ $fechaInicio }}" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
+                            <input type="date" name="fecha_fin" value="{{ $fechaFin }}" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-lg">
+                        Filtrar
+                    </button>
+                    <a href="{{ route('dashboard') }}" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg inline-block">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Gráficas de tickets -->
+        <div class="mb-6 bg-white shadow-md rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Gráficas de Tickets</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <canvas id="graficaEstados"></canvas>
+                </div>
+                <div>
+                    <canvas id="graficaBarras"></canvas>
+                </div>
+            </div>
         </div>
 
         <!-- Resumen de usuarios -->
@@ -145,8 +206,12 @@
                                 </td>
                                 <td class="py-2 px-4 border-b">
                                     @if($ticket->auxiliar)
-                                        <span class="text-sm">{{ $ticket->auxiliar->name }}</span>
-                                    @else
+                                        <span class="text-sm">Auxiliar: {{ $ticket->auxiliar->name }}</span>
+                                    @endif
+                                    @if($ticket->departamento)
+                                        <span class="text-sm block">Dept: {{ $ticket->departamento->nombre }}</span>
+                                    @endif
+                                    @if(!$ticket->auxiliar && !$ticket->departamento)
                                         <span class="text-sm text-gray-400">Sin asignar</span>
                                     @endif
                                 </td>
@@ -158,7 +223,7 @@
                                         <a href="{{ route('tickets.show', $ticket->id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded shadow text-sm">
                                             Ver
                                         </a>
-                                        @if(!$ticket->auxiliar_id && $ticket->estado != 'cerrado')
+                                        @if((!$ticket->auxiliar_id && !$ticket->departamento_id) && $ticket->estado != 'cerrado')
                                             <button onclick="mostrarModalAsignar({{ $ticket->id }})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded shadow text-sm">
                                                 Asignar
                                             </button>
@@ -183,15 +248,24 @@
     <div id="modalAsignar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Asignar Ticket a Auxiliar</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Asignar Ticket</h3>
                 <form id="formAsignar" method="POST" action="">
                     @csrf
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Auxiliar</label>
-                        <select name="auxiliar_id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
-                            <option value="">Seleccione un auxiliar</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Auxiliar (opcional)</label>
+                        <select name="auxiliar_id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="">Sin asignar</option>
                             @foreach($auxiliares as $auxiliar)
                                 <option value="{{ $auxiliar->id }}">{{ $auxiliar->name }} ({{ $auxiliar->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Departamento (opcional)</label>
+                        <select name="departamento_id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="">Sin asignar</option>
+                            @foreach($departamentos as $departamento)
+                                <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -208,6 +282,9 @@
         </div>
     </div>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         function mostrarModalAsignar(ticketId) {
             const modal = document.getElementById('modalAsignar');
@@ -228,5 +305,105 @@
                 cerrarModal();
             }
         }
+
+        // Mostrar/ocultar campos de rango de fechas
+        document.getElementById('filtro_tipo').addEventListener('change', function() {
+            const rangoFechas = document.getElementById('rango-fechas-filtro');
+            if (this.value === 'rango') {
+                rangoFechas.classList.remove('hidden');
+            } else {
+                rangoFechas.classList.add('hidden');
+            }
+        });
+
+        // Gráfica de estados (Pie Chart)
+        const ctxEstados = document.getElementById('graficaEstados').getContext('2d');
+        new Chart(ctxEstados, {
+            type: 'pie',
+            data: {
+                labels: ['Atendidos', 'Rechazados', 'Pendientes', 'En Proceso'],
+                datasets: [{
+                    data: [
+                        {{ $datosGraficas['atendidos'] }},
+                        {{ $datosGraficas['rechazados'] }},
+                        {{ $datosGraficas['pendientes'] }},
+                        {{ $datosGraficas['en_proceso'] }}
+                    ],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(249, 115, 22, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(249, 115, 22, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Distribución de Tickets por Estado'
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Gráfica de barras
+        const ctxBarras = document.getElementById('graficaBarras').getContext('2d');
+        new Chart(ctxBarras, {
+            type: 'bar',
+            data: {
+                labels: ['Atendidos', 'Rechazados', 'Pendientes', 'En Proceso'],
+                datasets: [{
+                    label: 'Cantidad de Tickets',
+                    data: [
+                        {{ $datosGraficas['atendidos'] }},
+                        {{ $datosGraficas['rechazados'] }},
+                        {{ $datosGraficas['pendientes'] }},
+                        {{ $datosGraficas['en_proceso'] }}
+                    ],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(249, 115, 22, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(249, 115, 22, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Tickets por Estado (Barras)'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
     </script>
 </x-app-layout>

@@ -16,6 +16,7 @@ class Ticket extends Model
         'estado',
         'usuario_id',
         'auxiliar_id',
+        'departamento_id',
         'fecha_asignacion',
         'fecha_finalizacion',
     ];
@@ -35,5 +36,11 @@ class Ticket extends Model
     public function auxiliar()
     {
         return $this->belongsTo(User::class, 'auxiliar_id');
+    }
+
+    // Relación con departamento
+    public function departamento()
+    {
+        return $this->belongsTo(Departamento::class);
     }
 }

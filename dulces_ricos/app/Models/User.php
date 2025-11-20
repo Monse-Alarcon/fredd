@@ -17,7 +17,7 @@ class User extends Authenticatable
         'password',
         'profile_photo',
         'role',
-        'departamento', // agregado
+        'departamento_id',
     ];
 
     protected $hidden = [
@@ -43,5 +43,11 @@ class User extends Authenticatable
 
         // Imagen por defecto si el usuario no tiene foto
         return asset('images/default-profile.png');
+    }
+
+    // Relación con departamento
+    public function departamento()
+    {
+        return $this->belongsTo(Departamento::class);
     }
 }

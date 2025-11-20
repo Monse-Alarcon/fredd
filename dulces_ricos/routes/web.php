@@ -4,6 +4,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\DepartamentoController;
 use Illuminate\Support\Facades\Route;
 
 //  Agrupamos todo dentro del middleware 'web'
@@ -39,6 +41,15 @@ Route::middleware(['web'])->group(function () {
         // Reportes (validación dentro del controlador)
         Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
         Route::post('/reportes/generar-pdf', [ReporteController::class, 'generarPDF'])->name('reportes.generar-pdf');
+
+        // Administración (solo para jefe)
+        Route::prefix('admin')->name('admin.')->group(function () {
+            // Usuarios
+            Route::resource('users', UserController::class);
+            
+            // Departamentos
+            Route::resource('departamentos', DepartamentoController::class);
+        });
     });
 
     //  Autenticación (login, registro, etc.)
