@@ -13,6 +13,16 @@
 
             <h3 class="text-lg font-semibold text-gray-800 mb-6">Seleccione el período para el reporte</h3>
 
+            @if ($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('reportes.generar-pdf') }}" method="POST">
                 @csrf
                 
@@ -20,22 +30,22 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Reporte</label>
                     <select name="tipo" id="tipo" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" required>
                         <option value="">Seleccione un tipo</option>
-                        <option value="semanal">Semanal</option>
-                        <option value="mensual">Mensual</option>
-                        <option value="bimestral">Bimestral</option>
-                        <option value="rango">Rango de fechas</option>
+                        <option value="semanal" {{ old('tipo') === 'semanal' ? 'selected' : '' }}>Semanal</option>
+                        <option value="mensual" {{ old('tipo') === 'mensual' ? 'selected' : '' }}>Mensual</option>
+                        <option value="bimestral" {{ old('tipo') === 'bimestral' ? 'selected' : '' }}>Bimestral</option>
+                        <option value="rango" {{ old('tipo') === 'rango' ? 'selected' : '' }}>Rango de fechas</option>
                     </select>
                 </div>
 
-                <div id="rango-fechas" class="mb-6 hidden">
+                <div id="rango-fechas" class="mb-6 {{ old('tipo') === 'rango' ? '' : 'hidden' }}">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <input type="date" name="fecha_inicio" value="{{ old('fecha_inicio') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <input type="date" name="fecha_fin" value="{{ old('fecha_fin') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
                         </div>
                     </div>
                 </div>
@@ -48,7 +58,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        Generar PDF
+                        Descargar PDF
                     </button>
                 </div>
             </form>
@@ -56,19 +66,22 @@
     </div>
 
     <script>
-        document.getElementById('tipo').addEventListener('change', function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const tipoSelect = document.getElementById('tipo');
             const rangoFechas = document.getElementById('rango-fechas');
-            if (this.value === 'rango') {
-                rangoFechas.classList.remove('hidden');
-                rangoFechas.querySelectorAll('input').forEach(input => {
-                    input.setAttribute('required', 'required');
-                });
-            } else {
-                rangoFechas.classList.add('hidden');
-                rangoFechas.querySelectorAll('input').forEach(input => {
-                    input.removeAttribute('required');
-                });
-            }
+
+            const toggleRango = () => {
+                if (tipoSelect.value === 'rango') {
+                    rangoFechas.classList.remove('hidden');
+                    rangoFechas.querySelectorAll('input').forEach(input => input.setAttribute('required', 'required'));
+                } else {
+                    rangoFechas.classList.add('hidden');
+                    rangoFechas.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
+                }
+            };
+
+            tipoSelect.addEventListener('change', toggleRango);
+            toggleRango();
         });
     </script>
 </x-app-layout>

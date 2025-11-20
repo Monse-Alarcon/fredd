@@ -105,14 +105,14 @@ class TicketController extends Controller
 
         // Si se asigna a un auxiliar
         if ($request->auxiliar_id) {
-            $auxiliar = User::findOrFail($request->auxiliar_id);
-            
-            if ($auxiliar->role !== 'auxiliar') {
-                return redirect()->back()->withErrors(['auxiliar_id' => 'El usuario seleccionado no es un auxiliar.']);
-            }
+        $auxiliar = User::findOrFail($request->auxiliar_id);
+        
+        if ($auxiliar->role !== 'auxiliar') {
+            return redirect()->back()->withErrors(['auxiliar_id' => 'El usuario seleccionado no es un auxiliar.']);
+        }
 
-            $ticket->auxiliar_id = $request->auxiliar_id;
-            $ticket->fecha_asignacion = now();
+        $ticket->auxiliar_id = $request->auxiliar_id;
+        $ticket->fecha_asignacion = now();
         }
 
         // Si se asigna a un departamento
