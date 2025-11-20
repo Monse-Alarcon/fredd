@@ -94,7 +94,9 @@
                                         </button>
                                     </form>
                                 @else
-                                    <span class="text-gray-400 text-sm">No se puede eliminar</span>
+                                    <button type="button" disabled class="bg-gray-400 text-gray-600 px-3 py-1 rounded shadow text-sm cursor-not-allowed" title="No se puede eliminar un ticket en proceso">
+                                        Eliminar
+                                    </button>
                                 @endif
                             </td>
                         </tr>

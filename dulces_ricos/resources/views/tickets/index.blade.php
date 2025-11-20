@@ -66,13 +66,19 @@
                             <td class="py-2 px-4 border-b">{{ ucfirst($ticket->prioridad) }}</td>
                             <td class="py-2 px-4 border-b">{{ ucfirst($ticket->estado) }}</td>
                             <td class="py-2 px-4 border-b text-center">
-                                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" class="inline-block" onsubmit="return confirmDelete(event)">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow">
-                                         Eliminar
+                                @if($ticket->estado != 'en progreso')
+                                    <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" class="inline-block" onsubmit="return confirmDelete(event)">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button" disabled class="bg-gray-400 text-gray-600 px-3 py-1 rounded shadow cursor-not-allowed" title="No se puede eliminar un ticket en proceso">
+                                        Eliminar
                                     </button>
-                                </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
