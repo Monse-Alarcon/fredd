@@ -11,28 +11,31 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function __construct()
+    /**
+     * Ensure only the boss can manage users.
+     */
+    private function ensureBoss(): void
     {
-        $this->middleware(function ($request, $next) {
-            abort_unless(Auth::user()?->role === 'jefe', 403);
-            return $next($request);
-        });
+        abort_unless(Auth::user()?->role === 'jefe', 403);
     }
 
     public function index()
     {
+        $this->ensureBoss();
         $usuarios = User::with('departamento')->get();
         return view('admin.users.index', compact('usuarios'));
     }
 
     public function create()
     {
+        $this->ensureBoss();
         $departamentos = Departamento::all();
         return view('admin.users.create', compact('departamentos'));
     }
 
     public function store(Request $request)
     {
+        $this->ensureBoss();
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -55,6 +58,7 @@ class UserController extends Controller
 
     public function edit($id)
     {
+        $this->ensureBoss();
         $usuario = User::findOrFail($id);
         $departamentos = Departamento::all();
         return view('admin.users.edit', compact('usuario', 'departamentos'));
@@ -62,6 +66,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->ensureBoss();
         $usuario = User::findOrFail($id);
         
         $request->validate([
@@ -91,6 +96,7 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        $this->ensureBoss();
         $usuario = User::findOrFail($id);
         
         // No permitir eliminar al propio usuario jefe
