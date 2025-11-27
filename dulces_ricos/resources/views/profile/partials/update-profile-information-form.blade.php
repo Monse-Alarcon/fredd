@@ -28,7 +28,20 @@
         <x-input-label for="profile_photo" :value="__('Foto de perfil')" />
 
         <div class="flex items-center space-x-4 mt-2">
-            <img src="{{ auth()->user()->profile_photo_url }}" 
+            @php
+                $user = auth()->user();
+                $photoPath = $user->profile_photo ?? null;
+                $publicFilename = $photoPath ? basename($photoPath) : null;
+                $publicFilePath = $publicFilename ? public_path('images/profile_pictures/' . $publicFilename) : null;
+
+                if ($publicFilePath && file_exists($publicFilePath)) {
+                    $photoUrl = asset('images/profile_pictures/' . $publicFilename) . '?t=' . ($user->updated_at ? $user->updated_at->timestamp : time());
+                } else {
+                    $photoUrl = $user->profile_photo_url;
+                }
+            @endphp
+
+            <img src="{{ $photoUrl }}"
                 alt="Foto de perfil actual"
                 class="w-16 h-16 rounded-full object-cover border">
 
